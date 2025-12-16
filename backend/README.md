@@ -30,3 +30,6 @@ API endpoints:
 - POST /api/upload/person
 - POST /api/donate
 - GET /api/reports?user_id=#
+
+// Example fetch request
+const res = await fetch('https://your-backend.onrender.com/api/reports?user_id=...');
