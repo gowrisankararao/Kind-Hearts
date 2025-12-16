@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard - Kind Hearts</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  html, body {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+  main {
+    flex: 1;
+    padding: 76px 20px 40px 20px;
+    width: 100%;
+  }
+</style>
+<script defer>
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = JSON.parse(localStorage.getItem('kh_user') || 'null');
+  if (!user) { alert('Please login first'); window.location.href = 'login.html'; return; }
+  document.getElementById('userName').innerText = user.name || '';
+  // Fetch reports by user (simple)
+  const res = await fetch('http://localhost:5000/api/reports?user_id=' + (user.id||''));
+  if (!res.ok) return;
+  const data = await res.json();
+  const table = document.getElementById('casesTable');
+  data.forEach(d => {
+    const row = table.insertRow();
+    row.insertCell(0).innerText = d.name || '';
+    row.insertCell(1).innerText = d.category || '';
+    row.insertCell(2).innerText = d.created_at || '';
+  });
+});
+</script>
+</head>
+<body class="register-body dashboard-wrapper">
+  <div class="bg-shapes">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <header>
+    <nav class="navbar">
+      <div class="logo">Kind <span>Hearts</span> ❤️</div>
+      <ul class="nav-links" style="margin-left:auto;">
+       
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="upload.html">Report Case</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="login.html" onclick="localStorage.removeItem('kh_user')">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="dashboard-hero" style="background: url('../assets/baground.jpg') center/cover no-repeat; padding:60px; border-radius:14px; margin-bottom: 28px;">
+      <div style="display:flex; gap:28px; align-items:flex-start;">
+        <div style="flex:1; background: rgba(0,0,0,0.45); padding:26px; border-radius:12px;">
+          <h2 style="color:#fff; margin-bottom:8px;">Welcome, <span id="userName"></span></h2>
+          <p style="color:#f3e6ea; line-height:1.6;">Thank you for being part of Kind Hearts. From this dashboard you can report cases, manage your submissions and make donations to help people in need.</p>
+          <div style="margin-top:14px; display:flex; gap:10px;">
+            <a class="btn" href="upload.html">+ Report New Case</a>
+            <a class="btn btn-outline" href="donate.html">Make a Donation</a>
+          </div>
+        </div>
+
+        <aside style="width:420px;">
+          <div style="background: rgba(255,255,255,0.08); padding:18px; border-radius:12px;">
+            <h3 style="color:#ffd6e0; margin-bottom:8px;">Quick Resources</h3>
+            <ul style="color:#fff; line-height:1.6; margin-left:18px;">
+              <li><strong>Legal Help:</strong> Free legal aid for children and vulnerable adults.</li>
+              <li><strong>Emergency Contacts:</strong> Local helplines and support centers.</li>
+              <li><strong>How Donations Are Used:</strong> Education, medical aid, shelter and rehabilitation.</li>
+            </ul>
+            <div style="margin-top:12px; text-align:center;">
+              <a href="about.html" class="btn-outline">Learn More</a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section style="display:grid; grid-template-columns: 1fr 360px; gap:22px;">
+      <div class="dashboard-card" style="padding:22px;">
+        <h3 style="margin-top:0;">Your Submitted Cases</h3>
+        <div style="max-height:500px; overflow-y:auto;">
+          <table id="casesTable" style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="text-align:left; color:#fff; opacity:0.9;"><th style="padding:10px;">Person</th><th style="padding:10px;">Category</th><th style="padding:10px;">Submitted At</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <aside>
+        <div style="background: rgba(255,255,255,0.06); padding:18px; border-radius:12px;">
+          <h4 style="color:#ffd6e0; margin-top:0;">About Our Work</h4>
+          <p style="color:#fff; line-height:1.5;">We provide immediate assistance and long-term support to vulnerable people. Read about laws protecting children and how you can help.</p>
+          <ul style="color:#fff; line-height:1.6;">
+            <li><a href="#" style="color:#ffd6e0">Juvenile Justice Act — Overview</a></li>
+            <li><a href="#" style="color:#ffd6e0">Right to Education</a></li>
+            <li><a href="#" style="color:#ffd6e0">Protection Rights &amp; Helplines</a></li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

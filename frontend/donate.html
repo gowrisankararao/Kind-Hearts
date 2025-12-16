@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Donate - Kind Hearts</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Local donate page styles */
+    body { padding-top: 76px; font-family: 'Poppins', sans-serif; }
+    .wrap { min-height: calc(100vh - 76px); display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+
+    .card { width:820px; max-width:96%; display:flex; gap:28px; border-radius:18px; padding:26px; background:rgba(255,255,255,0.05); backdrop-filter: blur(10px); box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+    .info { flex:1; color:#fff; padding:6px 8px; }
+    .info h1 { color:#ff6b86; font-size:2rem; margin-bottom:10px }
+    .info p{ color:#ddd; line-height:1.6 }
+    .form-panel { width:380px; background:#fff; border-radius:12px; padding:18px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+    .form-panel h3{ text-align:center; margin-bottom:12px; color:#222 }
+
+    .form-row{ margin-bottom:12px }
+    label{ display:block; margin-bottom:6px; color:#333; font-weight:600 }
+    input[type=text], input[type=number], textarea{ width:100%; padding:12px 14px; border-radius:10px; border:1px solid rgba(0,0,0,0.08); font-size:0.95rem }
+    textarea{ min-height:90px; resize:vertical }
+    .btn { width:100%; background:linear-gradient(135deg,#ff5e78,#ff8fa1); color:#fff; padding:12px; border-radius:10px; border:none; font-weight:700; cursor:pointer }
+
+    .qr-wrap{ margin-top:14px; text-align:center }
+    .qr-card{ background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); padding:12px; border-radius:10px; color:#fff }
+    .qr-card img{ width:100%; max-width:260px; border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.4) }
+    .qr-amount { margin-top:10px; font-weight:700; color:#ffdfe6 }
+
+    /* Large thank-you overlay */
+    .thank-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:5000 }
+    .thank-overlay .text { color:#fff; font-size:64px; font-weight:800; letter-spacing:4px; text-align:center }
+
+    @media (max-width:860px){ .card{ flex-direction:column; padding:18px } .form-panel{ width:100% } }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">Kind <span>Hearts</span> ❤️</div>
+      <ul class="nav-links" style="margin-left:auto;">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="donate.html" class="active">Donate</a></li>
+        <li><a href="register.html">Register</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="info">
+        <h1>Support Kind Hearts</h1>
+        <p>Your contribution helps us run programs that change lives. Select an amount and click Donate — you'll see the QR code to complete payment. We never store payment details.</p>
+        <ul style="color:#f8d7df; margin-top:14px">
+          <li>Transparent use of funds</li>
+          <li>Secure payments</li>
+          <li>Receipts available on request</li>
+        </ul>
+      </div>
+
+      <div class="form-panel">
+        <h3>Donation Form</h3>
+        <form id="donateForm">
+          <div class="form-row">
+            <label for="donor_name">Name</label>
+            <input id="donor_name" name="donor_name" type="text" placeholder="Your name" required>
+          </div>
+          <div class="form-row">
+            <label for="amount">Amount (₹)</label>
+            <input id="amount" name="amount" type="number" placeholder="Enter amount" min="1" required>
+          </div>
+          <div class="form-row">
+            <label for="message">Message (optional)</label>
+            <textarea id="message" name="message" placeholder="A short message (optional)"></textarea>
+          </div>
+
+          <button type="submit" class="btn">Donate</button>
+        </form>
+
+        <div class="qr-wrap" id="qrWrap" style="display:none;">
+          <div class="qr-card">
+            <div style="font-weight:600; margin-bottom:8px; color:#ffdfe6">Scan to Pay</div>
+            <div style="position:relative; display:inline-block">
+              <img id="qrImage" src="../qr.jpg" alt="QR code" style="width:220px; height:220px; object-fit:cover;">
+              <div id="qrOverlay" style="position:absolute; left:0; right:0; bottom:-6px; text-align:center; font-weight:700; color:#fff; background:linear-gradient(90deg, rgba(255,94,120,0.9), rgba(255,120,150,0.8)); padding:6px 10px; border-radius:8px; transform:translateY(0%);">₹0</div>
+            </div>
+            <div class="qr-amount" id="qrAmountText"></div>
+            <button id="paidBtn" type="button" style="margin-top:12px; width:100%; background:#28a745; color:#fff; padding:10px; border-radius:8px; border:none; font-weight:700; cursor:pointer;">Payment Done</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <div class="thank-overlay" id="thankOverlay">
+    <div class="text">THANK YOU</div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const form = document.getElementById('donateForm');
+  const qrWrap = document.getElementById('qrWrap');
+  const qrImage = document.getElementById('qrImage');
+  const qrOverlay = document.getElementById('qrOverlay');
+  const qrAmountText = document.getElementById('qrAmountText');
+  const paidBtn = document.getElementById('paidBtn');
+  const thank = document.getElementById('thankOverlay');
+
+  // Set QR path
+  qrImage.src = '../qr.jpg';
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const name = form.donor_name.value.trim();
+    const amount = parseFloat(form.amount.value) || 0;
+    const message = form.message.value.trim();
+
+    // Show QR and amount overlay
+    qrOverlay.textContent = `₹${amount.toFixed(0)}`;
+    qrAmountText.textContent = `${name ? name + ' — ' : ''}Please scan the QR to pay ₹${amount.toFixed(0)}`;
+    qrWrap.style.display = 'block';
+    
+    // Scroll to QR
+    setTimeout(()=>{ qrWrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+
+    // Send to backend
+    try {
+      await fetch('/api/donate', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ donor_name: name, amount, message })
+      });
+    } catch (err) {
+      console.warn('backend donate failed', err);
+    }
+  });
+
+  // When user clicks "Payment Done"
+  paidBtn.addEventListener('click', ()=>{
+    thank.style.display = 'flex';
+    setTimeout(()=>{ 
+      thank.style.display = 'none'; 
+      // Keep QR code visible
+    }, 3000);
+  });
+});
+</script>
+</body>
+</html>

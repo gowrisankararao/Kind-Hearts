@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register - Kind Hearts</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .msg { margin-top: 12px; font-size: 0.95rem; }
+    .msg.error { color: #b00020; }
+    .msg.success { color: #007a3d; }
+    button[disabled] { opacity: 0.6; cursor: not-allowed; }
+  </style>
+  <script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('registerForm');
+      const submitBtn = document.getElementById('registerBtn');
+      const msg = document.getElementById('formMessage');
+
+      // Detect backend URL
+      const apiBase = location.protocol === 'file:' ? 'http://localhost:5000' : '';
+      const registerUrl = `${apiBase}/api/auth/register`;
+
+      function showMessage(text, type = 'error') {
+        msg.textContent = text;
+        msg.className = 'msg ' + (type === 'success' ? 'success' : 'error');
+      }
+
+      function clearMessage() {
+        msg.textContent = '';
+        msg.className = 'msg';
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMessage();
+
+        const name = form.name.value.trim();
+        const email = form.email.value.trim();
+        const password = form.password.value;
+        const phone = form.phone.value.trim();
+
+        if (!name || !email || !password) {
+          showMessage('Name, email and password are required.');
+          return;
+        }
+        if (password.length < 6) {
+          showMessage('Password must be at least 6 characters.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Registering...';
+
+        const payload = { name, email, password, phone: phone || null };
+
+        try {
+          const res = await fetch(registerUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          let data = {};
+          try { data = await res.json(); } catch (err) { /* ignore */ }
+
+          if (!res.ok) {
+            const serverMsg = data && data.message ? data.message : `Registration failed (${res.status})`;
+            showMessage(serverMsg, 'error');
+            console.error('Register failed:', res.status, data);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Register';
+            return;
+          }
+
+          showMessage(data.message || 'Registration successful!', 'success');
+
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 900);
+        } catch (err) {
+          console.error('Network error:', err);
+          showMessage('Network error. Is the backend running?', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Register';
+        }
+      });
+    });
+  </script>
+</head>
+<body class="register-body">
+  <div class="bg-shapes">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <div class="register-card">
+      <h2>Register</h2>
+      <form id="registerForm">
+          <input name="name" type="text" placeholder="Full Name" required>
+          <input name="email" type="email" placeholder="Email" required>
+          <input name="password" type="password" placeholder="Password (min 6 chars)" required>
+          <input name="phone" type="tel" placeholder="Phone Number">
+          <button id="registerBtn" type="submit">Register</button>
+          <div id="formMessage" class="msg" aria-live="polite"></div>
+      </form>
+      <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+</body>
+</html>
